@@ -1,0 +1,104 @@
+Create Tables
+CREATE TABLE Clients (
+    client_id INT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    contact_info VARCHAR(255) NOT NULL,
+    address VARCHAR(255)
+);
+
+CREATE TABLE Properties (
+    property_id INT PRIMARY KEY,
+    address VARCHAR(255) NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL
+);
+
+CREATE TABLE Agents (
+    agent_id INT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    license_number VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE Transactions (
+    transaction_id INT PRIMARY KEY,
+    client_id INT NOT NULL,
+    property_id INT NOT NULL,
+    transaction_date DATE,
+    transaction_type VARCHAR(50),
+    amount DECIMAL(10, 2),
+    FOREIGN KEY (client_id) REFERENCES Clients(client_id) ON DELETE CASCADE,
+    FOREIGN KEY (property_id) REFERENCES Properties(property_id) ON DELETE CASCADE
+);
+
+CREATE TABLE Appointments (
+    appointment_id INT PRIMARY KEY,
+    client_id INT NOT NULL,
+    property_id INT NOT NULL,
+    appointment_date DATE,
+    appointment_time TIME,
+    purpose VARCHAR(100),
+    FOREIGN KEY (client_id) REFERENCES Clients(client_id) ON DELETE CASCADE,
+    FOREIGN KEY (property_id) REFERENCES Properties(property_id) ON DELETE CASCADE
+);
+
+CREATE TABLE Reviews (
+    review_id INT PRIMARY KEY,
+    client_id INT NOT NULL,
+    property_id INT NOT NULL,
+    review_text TEXT,
+    rating INT NOT NULL, -- e.g., 1-5 scale
+    review_date DATETIME,
+    FOREIGN KEY (client_id) REFERENCES Clients(client_id) ON DELETE CASCADE,
+    FOREIGN KEY (property_id) REFERENCES Properties(property_id) ON DELETE CASCADE
+);
+
+Insert sample data into Clients Table
+INSERT INTO Clients (client_id, name, contact_info, address)
+VALUES (1, 'Byron Solina', 'byronsolina@gmail.com', '315-C Gutierrez Street, Imus City, Cavite');
+
+Insert sample data into Properties Table
+INSERT INTO Properties (property_id, address, type, status, price)
+VALUES (1, 'Anuling 1 Cerca, Mendez, Cavite', 'House', 'Available', 5000000);
+
+Insert sample data into Agents Table
+INSERT INTO Agents (agent_id, name, license_number)
+VALUES (1, 'Kaye Artuz', 'RE123456');
+
+Insert sample data into Transactions Table
+INSERT INTO Transactions (transaction_id, client_id, property_id, transaction_date, transaction_type, amount)
+VALUES (1, 1, 1, '09-09-2024', 'Purchase', 5000000);
+
+Insert sample data into Appointments Table
+INSERT INTO Appointments (appointment_id, client_id, property_id, appointment_date, appointment_time, purpose)
+VALUES (1, 1, 1, '09-07-2024', '15:00 PM', 'Tripping');
+
+Insert sample data into Reviews Table
+INSERT INTO Reviews (review_id, client_id, property_id, review_text, rating, review_date)
+VALUES (1, 1, 1, 'Great property with excellent amenities!', 5, '09-10-2024 10:00 PM');
+
+Queries
+1. Get All Transactions for a Specific Client
+SELECT Transactions.transaction_id, Properties.address, Transactions.transaction_date, Transactions.amount
+FROM Transactions
+JOIN Properties ON Transactions.property_id = Properties.property_id
+WHERE Transactions.client_id = 1;
+
+2. Get All Reviews for a Specific Property
+SELECT Clients.name, Reviews.review_text, Reviews.rating, Reviews.review_date
+FROM Reviews
+JOIN Clients ON Reviews.client_id = Clients.client_id
+WHERE Reviews.property_id = 1;
+
+3. Get Upcoming Appointments for a Specific Client
+SELECT Appointments.appointment_date, Appointments.appointment_time, Properties.address
+FROM Appointments
+JOIN Properties ON Appointments.property_id = Properties.property_id
+WHERE Appointments.client_id = 1
+  AND Appointments.appointment_date >= DATE();
+
+4. Get All Properties with Reviews
+SELECT Properties.address, COUNT(Reviews.review_id) AS total_reviews, AVG(Reviews.rating) AS average_rating
+FROM Properties
+JOIN Reviews ON Properties.property_id = Reviews.property_id
+GROUP BY Properties.property_id;
